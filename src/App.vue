@@ -1,7 +1,7 @@
 <template>
   <div>
-    <cline/>
-  <!-- <HomeView/>  -->
+   
+  <HomeView/> 
    <!-- <Temperature/>
    <Humidity/>
    <Pressure/>
@@ -22,8 +22,8 @@ import cline from './components/cline.vue';
 export default {
   name: 'App',
   components: {
-  //  HomeView,
-   cline
+   HomeView,
+   //cline
   }
 }
 </script>

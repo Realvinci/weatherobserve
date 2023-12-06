@@ -81,7 +81,7 @@
 				<col>
 				<col>
 				<col>
-				<col>
+				<!-- <col> -->
 				<col class="w-24">
 			</colgroup>
 			<thead class="dark:bg-gray-700 ">
@@ -91,7 +91,7 @@
 					<th class="p-3">Pressure</th>
 					<th class="p-3">Humidity</th>
 					<th class="p-3 ">Light</th>
-					<th class="p-3">Rainfall</th>
+					<!-- <th class="p-3">Rainfall</th> -->
 				</tr>
 			</thead>
 
@@ -113,9 +113,9 @@
 					<td class="p-3 text-right">
 						<p>{{weather.field4}}Ω</p>
 					</td>
-					<td class="p-3 text-right">
+					<!-- <td class="p-3 text-right">
 						<p>{{ weather.field5 }}</p>
-					</td>
+					</td> -->
 				</tr>
 			</tbody>
 		</table>
@@ -126,6 +126,7 @@
 
 
 </div>
+
   </div>
  
 </template>
@@ -145,6 +146,8 @@ import Humidity from '../components/Humidity.vue';
 import Pressure from '../components/Pressure.vue';
 import Light from '../components/Light.vue';
 import Rainfall from '../components/Rainfall.vue';
+
+import { mapActions, mapGetters } from 'vuex'
 
   export default {
     components: {
@@ -170,6 +173,7 @@ import Rainfall from '../components/Rainfall.vue';
       }
    },
    methods:{
+    
 async test(){
         const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
         const movies = await response.json()
@@ -191,22 +195,32 @@ async test(){
    async lastEntry(){
     const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
     const movies = await response.json()
-      //this.lastEntryid = movies.channel.last_entry_id
-      this.lastEntryid = 76
+      this.lastEntryid = movies.channel.last_entry_id
+   
       console.log(movies)
       console.log(this.lastEntryid)
       for(let feed of movies.feeds){
           if(this.lastEntryid === feed.entry_id){
               Object.assign(this.current,feed)  
-            //console.log(this.current)
+            console.log(this.current)
           }
       }
    },
-   pollData () {
-		this.interval = setInterval(() => {
-			this.lastEntry()
-		}, 3000)
-	}
+  
+		//	this.lastEntry()
+		 
+	
+},
+computed:{
+...mapGetters['getcurrent'],
+Temperature(){
+  return this.$store.getters.getTemperature
+},
+
+date(){
+  return this.$store.getters.getdate
+}
+
 },
 mounted:function(){
   
@@ -216,10 +230,9 @@ created(){
 this.test()
 this.lastEntry()
 
+//this.getWeather()
 },
-beforeDestroy () {
-	clearInterval(this.interval)
-} 
+
   }
   </script>
   

@@ -111,18 +111,10 @@
         async lastNumber(){
     const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
     const movies = await response.json()
-     this.lastNumber = movies.feeds.length
-      return this.lastNumber
-    //   //this.lastEntryid = movies.channel.last_entry_id
-    //   this.lastEntryid = 76
-    //   console.log(movies)
-    //   console.log(this.lastEntryid)
-    //   for(let feed of movies.feeds){
-    //       if(this.lastEntryid === feed.entry_id){
-    //           Object.assign(this.current,feed)  
-    //         //console.log(this.current)
-    //       }
-    //   }
+     this.lastentry = movies.feeds[movies.feeds.length-1].entry_id
+     console.log('this is called from the lastnumber',this.lastentry)
+    
+    
    },
     
 async test(){
@@ -133,15 +125,21 @@ async test(){
         
    }, 
    ...mapActions(['getWeather']),
-   async pollData () {
-        const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
-        const movies = await response.json()
-         if(movies.feeds.length>this.lastNumber){
-          this.polling = setInterval(() => {
-			this.getWeather()
-		}, 3000)
-         }
-		
+   async pollData () {   
+    this.getWeather()  
+     let last = this.lastentry
+     
+     const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
+     const movies = await response.json()
+     let found = movies.feeds.find(element => element.entry_id ===last );
+     if(found){
+      this.polling = setInterval(() => {
+		 	this.getWeather()
+       last = this.lastentry
+       console.log('this is from here',last)
+		 }, 300000)
+    }
+     
 	}
 },
 computed:{
