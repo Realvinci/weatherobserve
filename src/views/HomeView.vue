@@ -6,7 +6,7 @@
 <div class="w-full  bg-white p-10 rounded-xl ring-8 ring-white ring-opacity-40">
   <div class="flex justify-between">
     <div class="flex flex-col">
-      <span class="text-6xl font-bold">{{current.field1}}°C</span>
+      <span class="text-6xl font-bold">{{current[0].field1}}°C</span>
       <span class="font-semibold mt-1 text-gray-500"></span>
     </div>
     <div v-if="current.field5==='0'">
@@ -21,32 +21,32 @@
   </div>
   <div class="flex justify-between mt-12">
     <div class="flex flex-col items-center">
-      <span class="font-semibold text-lg">{{current.field1}}°C</span>
+      <span class="font-semibold text-lg">{{current[0].field1}}°C</span>
       
       <i class="fa-solid fa-temperature-quarter"></i>
       <span class="font-semibold mt-1 text-sm">Temperature</span>
      
     </div>
     <div class="flex flex-col items-center">
-      <span class="font-semibold text-lg">{{current.field2}}%</span>
+      <span class="font-semibold text-lg">{{current[0].field2}}%</span>
       <i class="fa-solid fa-droplet"></i>
       <span class="font-semibold mt-1 text-sm">Humidity</span>
     
     </div>
     <div class="flex flex-col items-center">
-      <span class="font-semibold text-lg">{{current.field3}}mb</span>
+      <span class="font-semibold text-lg">{{current[0].field3}}mb</span>
       <i class="fa-solid fa-turn-down"></i>
       <span class="font-semibold mt-1 text-sm">Pressure</span>
       
     </div>
     <div class="flex flex-col items-center">
-      <span class="font-semibold text-lg">{{current.field4}}Ω</span>
+      <span class="font-semibold text-lg">{{current[0].field4}}Ω</span>
       <i class="fa-solid fa-cloud-sun"></i>
       <span class="font-semibold mt-1 text-sm">Light intensity</span>
       
     </div>
     <div class="flex flex-col items-center">
-      <span class="font-semibold text-lg">{{ current.field5 }}</span>
+      <span class="font-semibold text-lg">{{ current[0].field5 }}</span>
       <i class="fa-solid fa-cloud-rain"></i>
       <span class="font-semibold mt-1 text-sm">Rainfall</span>
     </div>
@@ -161,7 +161,7 @@ import { mapActions, mapGetters } from 'vuex'
             feeds:[]
         },
         weatherdata:[],
-        current:{},
+        current:[],
         feeds:[],
         lastEntryid:null,
         pressure:[],
@@ -195,16 +195,13 @@ async test(){
    async lastEntry(){
     const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
     const movies = await response.json()
-      this.lastEntryid = movies.channel.last_entry_id
-   
-      console.log(movies)
-      console.log(this.lastEntryid)
-      for(let feed of movies.feeds){
-          if(this.lastEntryid === feed.entry_id){
-              Object.assign(this.current,feed)  
-            console.log(this.current)
+    this.lastEntryid = movies.channel.last_entry_id
+     console.log('This is the last entry',this.lastEntryid)
+     movies.feeds.forEach(element => {
+          if(element.entry_id === this.lastEntryid){
+               this.current.push(element)
           }
-      }
+     });
    },
   
 		//	this.lastEntry()
