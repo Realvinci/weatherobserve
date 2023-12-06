@@ -91,7 +91,7 @@
 					<th class="p-3">Pressure</th>
 					<th class="p-3">Humidity</th>
 					<th class="p-3 ">Light</th>
-					<!-- <th class="p-3">Rainfall</th> -->
+					<th class="p-3">Rainfall</th>
 				</tr>
 			</thead>
 
@@ -113,9 +113,9 @@
 					<td class="p-3 text-right">
 						<p>{{weather.field4}}Ω</p>
 					</td>
-					<!-- <td class="p-3 text-right">
+					<td class="p-3 text-right">
 						<p>{{ weather.field5 }}</p>
-					</td> -->
+					</td>
 				</tr>
 			</tbody>
 		</table>
