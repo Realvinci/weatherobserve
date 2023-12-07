@@ -201,26 +201,34 @@ async test(){
      movies.feeds.forEach(element => {
           if(element.entry_id === this.lastEntryid){
                this.current.push(element)
-               console.log(element)
+              console.log(element)
           }
      });
    },
   
    async pollData () {   
-    this.lastEntry()
-    const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
-    const movies = await response.json()
-    let last = movies.channel.last_entry_id
-    //console.log(this.lastEntryid)
+   // this.lastEntry()
+    // const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
+    // const movies = await response.json()
+    // let currentid = movies.channel.last_entry_id
+    
+   
 
-      this.polling = setInterval(() => {
-		 	this.lastEntry()
-       last = this.lastEntryid
-       console.log('this is from here',last,this.lastEntryid,'b')
-       this.lastEntry()
-		 }, 3000)
-	}
-		 
+      this.polling = setInterval(this.lastEntry ,3000)
+	},
+  //a function that returns a new object last object and pushes it and updates the last number
+    async currentdata(){
+      const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
+      const movies = await response.json()
+      let lastid = movies.channel.last_entry_id
+      movies.feeds.forEach(element=>{
+          if(element.entry_id === lastid){
+            //console.log(element)
+            this.current.push(element)
+             return element
+          }
+      })
+    }		 
 	
 },
 computed:{
@@ -235,17 +243,17 @@ date(){
 
 },
 mounted(){
-  this.lastEntry()
+  //this.lastEntry()
+  this.pollData()
 },
 created(){
   this.interval = setInterval(() =>{
       this.lastEntry()},3000)
-//this.pollData()
+this.pollData()
 this.test()
 this.lastEntry()
 
-//this.pollData()
-//this.getWeather()
+
 },
   beforeDestroy: function(){
 clearInterval(this.polling);
