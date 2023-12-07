@@ -3,10 +3,10 @@
     <div class="flex flex-col items-center justify-center w-screen min-h-screen text-gray-700 p-10 bg-gradient-to-br from-pink-200 via-purple-200 to-indigo-200 ">
 
 <!-- Component Start -->
-<div class="w-full  bg-white p-10 rounded-xl ring-8 ring-white ring-opacity-40">
+<div class="w-full md:w-full  bg-white p-10 rounded-xl ring-8 ring-white ring-opacity-40">
   <div class="flex justify-between">
     <div class="flex flex-col">
-      <span class="text-6xl font-bold">{{current[0].field1}}°C</span>
+      <span class="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-6xl font-bold">{{current[0].field1}}°C</span>
       <span class="font-semibold mt-1 text-gray-500"></span>
     </div>
     <div v-if="current.field5==='0'">
@@ -19,9 +19,9 @@
       <i class="fa-solid fa-cloud-rain r"></i>
     </div>
   </div>
-  <div class="flex justify-between mt-12">
+  <div class="flex justify-between mt-12 md:mt-6">
     <div class="flex flex-col items-center">
-      <span class="font-semibold text-lg">{{current[0].field1}}°C</span>
+      <span class="text-base sm:text-sm font-semibold text-lg">{{current[0].field1}}°C</span>
       
       <i class="fa-solid fa-temperature-quarter"></i>
       <span class="font-semibold mt-1 text-sm">Temperature</span>
@@ -73,7 +73,7 @@
   <div class="flex justify-between items-center">
 <!-- component -->
 <div class="container p-2 mx-auto sm:p-4 dark:text-gray-100">
-	<h2 class="mb-4 text-2xl font-semibold leading text-gray-900">Previous Days</h2>
+	<h2 class="mb-4 text-2xl font-semibold leading text-gray-900">Previous Data</h2>
 	<div class="overflow-x-auto overflow-y-auto" style="height: 50vh;">
 		<table class="min-w-full text-xs">
 			<colgroup>
@@ -156,6 +156,7 @@ import { mapActions, mapGetters } from 'vuex'
    name:'weather',
    data(){
       return{
+        polling:null,
         weather:{
             channel:{},
             feeds:[]
@@ -196,15 +197,29 @@ async test(){
     const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
     const movies = await response.json()
     this.lastEntryid = movies.channel.last_entry_id
-     console.log('This is the last entry',this.lastEntryid)
+     //console.log('This is the last entry',this.lastEntryid)
      movies.feeds.forEach(element => {
           if(element.entry_id === this.lastEntryid){
                this.current.push(element)
+               console.log(element)
           }
      });
    },
   
-		//	this.lastEntry()
+   async pollData () {   
+    this.lastEntry()
+    const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
+    const movies = await response.json()
+    let last = movies.channel.last_entry_id
+    //console.log(this.lastEntryid)
+
+      this.polling = setInterval(() => {
+		 	this.lastEntry()
+       last = this.lastEntryid
+       console.log('this is from here',last,this.lastEntryid,'b')
+       this.lastEntry()
+		 }, 3000)
+	}
 		 
 	
 },
@@ -219,15 +234,21 @@ date(){
 }
 
 },
-mounted:function(){
-  
+mounted(){
+  this.lastEntry()
 },
 created(){
+  this.interval = setInterval(() =>{
+      this.lastEntry()},3000)
 //this.pollData()
 this.test()
 this.lastEntry()
 
+//this.pollData()
 //this.getWeather()
+},
+  beforeDestroy: function(){
+clearInterval(this.polling);
 },
 
   }
