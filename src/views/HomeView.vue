@@ -4,8 +4,8 @@
 
 <!-- Component Start -->
 <div class="w-full md:w-full  bg-white p-10 rounded-xl ring-8 ring-white ring-opacity-40">
-  <div class="flex justify-between">
-    <div class="flex flex-col">
+  <div class="flex justify-between" >
+    <div class="flex flex-col" :key="renderWeatherKey">
       <span class="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-6xl font-bold">{{current[0].field1}}°C</span>
       <span class="font-semibold mt-1 text-gray-500"></span>
     </div>
@@ -148,7 +148,7 @@ import Light from '../components/Light.vue';
 import Rainfall from '../components/Rainfall.vue';
 
 import { mapActions, mapGetters } from 'vuex'
-
+import { nextTick } from 'vue'
   export default {
     components: {
    Temperature,Humidity,Pressure,Light,Rainfall
@@ -156,6 +156,7 @@ import { mapActions, mapGetters } from 'vuex'
    name:'weather',
    data(){
       return{
+        renderWeatherKey: 0,
         polling:null,
         weather:{
             channel:{},
@@ -201,7 +202,7 @@ async test(){
      movies.feeds.forEach(element => {
           if(element.entry_id === this.lastEntryid){
                this.current.push(element)
-              console.log(element)
+             console.log(element)
           }
      });
    },
@@ -244,20 +245,31 @@ date(){
 },
 mounted(){
   //this.lastEntry()
-  this.pollData()
+ // setInterval(()=>this.lastEntry(),3000)
+ this.polling = setInterval(async ()=>{
+  
+  const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
+      const movies = await response.json()
+      let lastid = movies.channel.last_entry_id
+      movies.feeds.forEach(element=>{
+           if(element.entry_id ===lastid){
+             // this.current[0] = { created_at: "2023-12-08T03:14:43Z", entry_id: 908, field1: "0", field2: "66.00", field3: "906.57", field4: "788", field5: "1" }
+            this.current[0] = element
+            this.renderWeatherKey++
+          }
+      })
+      console.log('mutated the current',this.current[0])
+ },3000)
 },
 created(){
-  this.interval = setInterval(() =>{
-      this.lastEntry()},3000)
-this.pollData()
+
+//this.pollData()
 this.test()
 this.lastEntry()
-
-
 },
-  beforeDestroy: function(){
-clearInterval(this.polling);
-},
+  unmounted() {
+    clearInterval(this.polling);
+  }
 
   }
   </script>
