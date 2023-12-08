@@ -133,13 +133,13 @@
 
   
 <script>
-// import {app as app} from '../../firebase'
-// import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-// import { arrayUnion, getFirestore ,updateDoc} from "firebase/firestore";
+import {app as app} from '../../firebase'
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { doc,setDoc,addDoc,collection,arrayUnion, getFirestore ,updateDoc} from "firebase/firestore";
 // import { doc, setDoc,addDoc,collection } from "firebase/firestore"; 
-// import axios from 'axios';
-// const storage = getStorage(app);
-// const db = getFirestore(app);
+import axios from 'axios';
+const storage = getStorage(app);
+const db = getFirestore(app);
 
 import Temperature from '../components/Temperature.vue';
 import Humidity from '../components/Humidity.vue';
@@ -202,7 +202,7 @@ async test(){
      movies.feeds.forEach(element => {
           if(element.entry_id === this.lastEntryid){
                this.current.push(element)
-             console.log(element)
+            // console.log(element)
           }
      });
    },
@@ -217,6 +217,25 @@ async test(){
 
       this.polling = setInterval(this.lastEntry ,3000)
 	},
+  async push(){
+    const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
+    const movies = await response.json()
+    console.log(movies)
+    await setDoc(doc(db, "Realtimeweatherstation", "weatherData"), movies);
+  },
+  async updateFeeds(vinci){
+    const RealtimeweatherstationRef = doc(db, "Realtimeweatherstation", "weatherData");
+
+// Atomically add a new region to the "regions" array field.
+await updateDoc(RealtimeweatherstationRef, {
+    feeds: arrayUnion(vinci)
+});
+
+// // Atomically remove a region from the "regions" array field.
+// await updateDoc(washingtonRef, {
+//     regions: arrayRemove("east_coast")
+// });
+  },
   //a function that returns a new object last object and pushes it and updates the last number
     async currentdata(){
       const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
@@ -255,15 +274,17 @@ mounted(){
            if(element.entry_id ===lastid){
              // this.current[0] = { created_at: "2023-12-08T03:14:43Z", entry_id: 908, field1: "0", field2: "66.00", field3: "906.57", field4: "788", field5: "1" }
             this.current[0] = element
+            this.updateFeeds(element)
             this.renderWeatherKey++
           }
       })
-      console.log('mutated the current',this.current[0])
+     // console.log('mutated the current',this.current[0])
  },3000)
 },
 created(){
-
+ //this.updateFeeds()
 //this.pollData()
+//this.push()
 this.test()
 this.lastEntry()
 },
