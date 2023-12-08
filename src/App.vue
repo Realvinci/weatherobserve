@@ -1,6 +1,6 @@
 <template>
   <div>
-   
+   <!-- <cline/> -->
   <HomeView/> 
    <!-- <Temperature/>
    <Humidity/>

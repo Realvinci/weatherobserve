@@ -1,251 +1,451 @@
 <template>
-    <div>
+  <div :key="renderWeatherKey">
     <LineChartGenerator
-      :chart-options="chartOptions"
-      :chart-data="chartData"
-      :chart-id="chartId"
-      :dataset-id-key="datasetIdKey"
-      :plugins="plugins"
-      :css-classes="cssClasses"
-      :styles="styles"
-      :width="width"
-      :height="height"
-    />
-    <p>{{ current }}</p>
-    </div>
-  </template>
-  
-  <script>
-  import { Line as LineChartGenerator } from 'vue-chartjs/legacy'
-  
-  import {
-    Chart as ChartJS,
-    Title,
-    Tooltip,
-    Legend,
-    LineElement,
-    LinearScale,
-    CategoryScale,
-    PointElement
-  } from 'chart.js'
-  
-  ChartJS.register(
-    Title,
-    Tooltip,
-    Legend,
-    LineElement,
-    LinearScale,
-    CategoryScale,
-    PointElement
-  )
-  import { mapActions, mapGetters } from 'vuex'
-  export default {
-    name: 'LineChart',
-    components: {
-      LineChartGenerator
+    :chart-options="chartOptions"
+    :chart-data="chartData"
+    :chart-id="chartId"
+    :dataset-id-key="datasetIdKey"
+    :plugins="plugins"
+    :css-classes="cssClasses"
+    :styles="styles"
+    :width="width"
+    :height="height"
+  />
+  </div>
+
+</template>
+
+<script>
+import { Line as LineChartGenerator } from 'vue-chartjs/legacy'
+
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  LinearScale,
+  CategoryScale,
+  PointElement
+} from 'chart.js'
+
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  LinearScale,
+  CategoryScale,
+  PointElement
+)
+
+export default {
+  name: 'LineChart',
+  components: {
+    LineChartGenerator
+  },
+  props: {
+    chartId: {
+      type: String,
+      default: 'line-chart'
     },
-    props: {
-      chartId: {
-        type: String,
-        default: 'line-chart'
-      },
-      datasetIdKey: {
-        type: String,
-        default: 'label'
-      },
-      width: {
-        type: Number,
-        default: 100
-      },
-      height: {
-        type: Number,
-        default: 400
-      },
-      cssClasses: {
-        default: '',
-        type: String
-      },
-      styles: {
-        type: Object,
-        default: () => {}
-      },
-      plugins: {
-        type: Array,
-        default: () => []
-      }
+    datasetIdKey: {
+      type: String,
+      default: 'label'
     },
-    data() {
-      return {
-        change:false,
-        tempdata:[],
-        polling: null,
-        lastentry:null,
-        chartData: {
-          labels: [
-            //push dates here
-            // 'January',
-            // 'February',
-            // 'March',
-            // 'April',
-            // 'May',
-            // 'June',
-            // 'July'
-          ],
-          datasets: [
-            //push values field values here
-            {
-              label: 'Temperature',
-              backgroundColor: '#f87979',
-              data: []
-            }
-          ]
-        },
-        chartOptions: {
-          responsive: true,
-          maintainAspectRatio: false
-        }
-      }
+    width: {
+      type: Number,
+      default: 100
     },
-   
-    methods:{
-        async lastNumber(){
-    const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
-    const movies = await response.json()
-     this.lastentry = movies.feeds[movies.feeds.length-1].entry_id
-     console.log('this is called from the lastnumber',this.lastentry)
-    
-    
-   },
-    
-async test(){
-        
-        
-        this.chartData.datasets[0].data = this.Temperature
-        this.chartData.labels = this.date
-        
-   }, 
-   ...mapActions(['getWeather']),
-   async pollData () {   
-    this.getWeather()  
-     let last = this.lastentry
-     
-     const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
-     const movies = await response.json()
-     let found = movies.feeds.find(element => element.entry_id ===last );
-     if(found){
-      this.polling = setInterval(() => {
-		 	this.getWeather()
-       last = this.lastentry
-       console.log('this is from here',last)
-		 }, 300000)
+    height: {
+      type: Number,
+      default: 400
+    },
+    cssClasses: {
+      default: '',
+      type: String
+    },
+    styles: {
+      type: Object,
+      default: () => {}
+    },
+    plugins: {
+      type: Array,
+      default: () => []
     }
-     
-	}
+  },
+  data() {
+    return {
+      polling:null,
+      renderWeatherKey:0,
+      lastNumber:null,
+      chartData: {
+        labels: [
+          //push dates here
+          // 'January',
+          // 'February',
+          // 'March',
+          // 'April',
+          // 'May',
+          // 'June',
+          // 'July'
+        ],
+        datasets: [
+          //push values field values here
+          {
+            label: 'Temperature',
+            backgroundColor: '#f87979',
+            data: []
+          }
+        ]
+      },
+      chartOptions: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    }
+  },
+  methods:{
+async test(){
+      const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
+      const movies = await response.json()
+        //console.log(movies) 
+       for(let feed of movies.feeds){
+          //console.log(feed.created_at)
+          let result = feed.created_at.substring(0, 11);
+          this.chartData.labels.push(result)
+         this.chartData.datasets[0].data.push(feed.field1)
+        //console.log(feed.field1)  
+      }
+      //console.log(this.chartData.datasets[0].data)
+ },
+ async getLast(){
+  const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
+  const movies = await response.json()
+  this.lastNumber = movies.channel.last_entry_id
+   //console.log(this.lastNumber)
+ },
+},
+mounted(){
+
+ this.polling = setInterval(async ()=>{
+  
+  const response = await fetch('https://api.thingspeak.com/channels/2336821/feeds.json')
+      const movies = await response.json()
+      let lastid = movies.channel.last_entry_id
+      let item = this.chartData.datasets[0].data
+      //console.log(item[99])
+      if(movies.feeds[99].entry_id!=this.lastNumber){
+        this.chartData.datasets[0].data.push(movies.feeds[99].field1)
+        this.lastNumber = movies.feeds[99].entry_id
+        this.renderWeatherKey++
+      }
+      
+      
+ },3000)
+},
+created(){
+ this.getLast()
+this.test()
+//this.lastEntry()
+}
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <template>
+  <LineChartGenerator
+    :chart-options="chartOptions"
+    :chart-data="chartData"
+    :chart-id="chartId"
+    :dataset-id-key="datasetIdKey"
+    :plugins="plugins"
+    :css-classes="cssClasses"
+    :styles="styles"
+    :width="width"
+    :height="height"
+  />
+</template>
+
+<script>
+import { Line as LineChartGenerator } from 'vue-chartjs/legacy'
+
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  LinearScale,
+  CategoryScale,
+  PointElement
+} from 'chart.js'
+
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  LinearScale,
+  CategoryScale,
+  PointElement
+)
+import { mapActions, mapGetters } from 'vuex'
+export default {
+  name: 'LineChart',
+  components: {
+    LineChartGenerator
+  },
+  props: {
+    chartId: {
+      type: String,
+      default: 'line-chart'
+    },
+    datasetIdKey: {
+      type: String,
+      default: 'label'
+    },
+    width: {
+      type: Number,
+      default: 100
+    },
+    height: {
+      type: Number,
+      default: 400
+    },
+    cssClasses: {
+      default: '',
+      type: String
+    },
+    styles: {
+      type: Object,
+      default: () => {}
+    },
+    plugins: {
+      type: Array,
+      default: () => []
+    }
+  },
+  data() {
+    return {
+      chartData: {
+        labels: [
+          //push dates here
+          // 'January',
+          // 'February',
+          // 'March',
+          // 'April',
+          // 'May',
+          // 'June',
+          // 'July'
+        ],
+        datasets: [
+          //push values field values here
+          {
+            label: 'Temperature',
+            backgroundColor: '#f87979',
+            data: []
+          }
+        ]
+      },
+      chartOptions: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    }
+  },
+  methods:{
+async test(){
+      
+      
+      this.chartData.datasets[0].data = this.Temperature
+      this.chartData.labels = this.date
+      
+ }, 
+ ...mapActions(['getWeather']),
 },
 computed:{
- current(){
-   return this.$store.getters.getcurrent
- },
- Temperature(){
-    return this.$store.getters.getTemperature
- },
- date(){
-    return this.$store.getters.getdate
- }
-  
-},
-beforeDestroy () {
-	clearInterval(this.polling)
-},
 
+Temperature(){
+  return this.$store.getters.getTemperature
+},
+date(){
+  return this.$store.getters.getdate
+}
+
+},
 created(){
-this.lastNumber()
+
 this.test()
 
-//this.getWeather()
-this.pollData()
-},
+this.getWeather()
+}
+}
+</script>
 
-  }
-  </script>
-  
-///check id number and find out for update  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
+ -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <!--   
-  
-  
-  <template>
-  <ul>
-    <li v-for="(item, i) in getWeatherData" :key="i">
+
+
+<template>
+<ul>
+  <li v-for="(item, i) in getWeatherData" :key="i">
+    {{ item }}
+  </li>
+  <p>{{ getChannel }}</p>
+  <h1>Temperature</h1>
+  <li v-for="(item,i) in getTemperature" :key="i">
       {{ item }}
-    </li>
-    <p>{{ getChannel }}</p>
-    <h1>Temperature</h1>
-    <li v-for="(item,i) in getTemperature" :key="i">
-        {{ item }}
-    </li>
-  </ul>
+  </li>
+</ul>
 </template>
 
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
 export default {
-    computed: {
-    ...mapGetters({
-      dataList: 'data',
-      loading: 'loading',
-    
-    })
-  },
-  methods: {
-    ...mapActions(['getWeather']),
-  },
-  computed:{
+  computed: {
+  ...mapGetters({
+    dataList: 'data',
+    loading: 'loading',
+  
+  })
+},
+methods: {
+  ...mapActions(['getWeather']),
+},
+computed:{
 ...mapGetters(['getWeatherData','getChannel','getTemperature'])
 },
 mounted () {
-   this.getWeather()
+ this.getWeather()
 }
 
 //or
